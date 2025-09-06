@@ -31,16 +31,16 @@ async function run() {
 
 
     // user api
-    // app.post('/users',async(req,res)=>{
-    //   const email = req.body.email;
-    //   const userExists =await usersCollection.findOne({email});
-    //   if(userExists){
-    //     return res.status(200).send({message: 'user already exists',inserted:false});
-    //   }
-    //   const userInfo =req.body;
-    //   const result= await usersCollection.insertOne(userInfo)
-    //   res.send (result); 
-    // })
+    app.post('/users',async(req,res)=>{
+      const email = req.body.email;
+      const userExists =await usersCollection.findOne({email});
+      if(userExists){
+        return res.status(200).send({message: 'user already exists',inserted:false});
+      }
+      const userInfo =req.body;
+      const result= await usersCollection.insertOne(userInfo)
+      res.send (result); 
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
