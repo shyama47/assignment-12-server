@@ -64,6 +64,7 @@ async function run() {
         $set: { role: role },
       };
 
+
       const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
@@ -112,3 +113,5 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`🔥 Server is running on port ${port}`);
 });
+
+
