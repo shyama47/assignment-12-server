@@ -27,20 +27,52 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-   const usersCollection = client.db('appOrbitDB').collection('user')
+    const usersCollection = client.db('appOrbitDB').collection('user')
 
 
     // user api
-    app.post('/users',async(req,res)=>{
+    app.post('/users', async (req, res) => {
       const email = req.body.email;
-      const userExists =await usersCollection.findOne({email});
-      if(userExists){
-        return res.status(200).send({message: 'user already exists',inserted:false});
+      const userExists = await usersCollection.findOne({ email });
+      if (userExists) {
+        return res.status(200).send({ message: 'user already exists', inserted: false });
       }
-      const userInfo =req.body;
-      const result= await usersCollection.insertOne(userInfo)
-      res.send (result); 
+      const userInfo = req.body;
+      const result = await usersCollection.insertOne(userInfo)
+      res.send(result);
     })
+    // get all users
+    app.get('/users', async (req, res) => {
+      const users = await usersCollection.find().toArray();
+      res.send(users);
+    });
+
+    // user role update API
+    app.patch('/users/:id', async (req, res) => {
+      try {
+        const id = req.params.id;
+        const { role } = req.body;
+
+        const filter = { _id: new ObjectId(id) };
+        const updateDoc = {
+          $set: { role: role }
+        };
+
+        const result = await usersCollection.updateOne(filter, updateDoc);
+
+        if (result.modifiedCount > 0) {
+          res.send({ success: true, message: "User role updated successfully" });
+        } else {
+          res.send({ success: false, message: "No changes made" });
+        }
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ success: false, message: "Failed to update user role" });
+      }
+    });
+
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
@@ -53,9 +85,9 @@ async function run() {
 run().catch(console.dir);
 
 // root route
-    app.get("/", (req, res) => {
-      res.send("✅ AppOrbit Server is Running...");
-    });
+app.get("/", (req, res) => {
+  res.send("✅ AppOrbit Server is Running...");
+});
 // Start server
 app.listen(port, () => {
   console.log(`🔥 Server is running on port ${port}`);
