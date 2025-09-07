@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
 const app = express();
@@ -28,6 +28,11 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     const usersCollection = client.db('appOrbitDB').collection('user')
+    const productsCollection = client.db("appOrbitDB").collection("products"); 
+
+    // =============================
+    // 🔹 USER APIS
+    // =============================
 
 
     // user api
@@ -41,36 +46,51 @@ async function run() {
       const result = await usersCollection.insertOne(userInfo)
       res.send(result);
     })
+
+
     // get all users
-    app.get('/users', async (req, res) => {
+    app.get("/users", async (req, res) => {
       const users = await usersCollection.find().toArray();
       res.send(users);
     });
 
-    // user role update API
-    app.patch('/users/:id', async (req, res) => {
-      try {
-        const id = req.params.id;
-        const { role } = req.body;
+    // update user role
+    app.patch("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const { role } = req.body;
 
-        const filter = { _id: new ObjectId(id) };
-        const updateDoc = {
-          $set: { role: role }
-        };
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { role: role },
+      };
 
-        const result = await usersCollection.updateOne(filter, updateDoc);
-
-        if (result.modifiedCount > 0) {
-          res.send({ success: true, message: "User role updated successfully" });
-        } else {
-          res.send({ success: false, message: "No changes made" });
-        }
-      } catch (error) {
-        console.error(error);
-        res.status(500).send({ success: false, message: "Failed to update user role" });
-      }
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
     });
 
+    // =============================
+    // 🔹 PRODUCT APIS
+    // =============================
+
+    // Add new product
+    app.post("/products", async (req, res) => {
+      const product = req.body;
+
+      // ✅ add timestamp automatically
+      product.timestamp = new Date();
+
+      const result = await productsCollection.insertOne(product);
+      res.send(result);
+    });
+
+    // Get all products (sorted by latest)
+    app.get("/products", async (req, res) => {
+      const products = await productsCollection
+        .find()
+        .sort({ timestamp: -1 }) // latest first
+        .toArray();
+      res.send(products);
+    });
 
 
 
