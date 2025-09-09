@@ -159,14 +159,14 @@ async function run() {
     });
 
     // ✅ update user subscription status
-    app.patch("/users/subscribe/:email", async (req, res) => {
-      const email = req.params.email;
-      const result = await usersCollection.updateOne(
-        { email },
-        { $set: { isSubscribed: true } }
-      );
-      res.send(result);
-    });
+    // app.patch("/users/subscribe/:email", async (req, res) => {
+    //   const email = req.params.email;
+    //   const result = await usersCollection.updateOne(
+    //     { email },
+    //     { $set: { isSubscribed: true } }
+    //   );
+    //   res.send(result);
+    // });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
