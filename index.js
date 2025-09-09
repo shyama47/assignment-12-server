@@ -1,7 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+
 require("dotenv").config();
+const stripe = require('stripe')(process.env.PAYMENT_GATEWAY_KEY)
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -28,7 +30,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     const usersCollection = client.db('appOrbitDB').collection('user')
-    const productsCollection = client.db("appOrbitDB").collection("products"); 
+    const productsCollection = client.db("appOrbitDB").collection("products");
 
     // =============================
     // 🔹 USER APIS
@@ -52,6 +54,12 @@ async function run() {
     app.get("/users", async (req, res) => {
       const users = await usersCollection.find().toArray();
       res.send(users);
+    });
+    // ✅ Get single user by email
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = await usersCollection.findOne({ email });
+      res.send(user);
     });
 
     // update user role
@@ -93,48 +101,72 @@ async function run() {
         .toArray();
       res.send(products);
     });
-   
-  // ✅ Get single product by id
-app.get("/singleproduct/:id", async (req, res) => {
-  const id = req.params.id;
-  const product = await productsCollection.findOne({ _id: new ObjectId(id) });
-  res.send(product);
-});
+
+    // ✅ Get single product by id
+    app.get("/singleproduct/:id", async (req, res) => {
+      const id = req.params.id;
+      const product = await productsCollection.findOne({ _id: new ObjectId(id) });
+      res.send(product);
+    });
 
 
-//    // ✅ Get all products by specific user (My Products)
-app.get("/products/user", async (req, res) => {
-  const email = req.query.email;
-  const products = await productsCollection
-    .find({ "owner_email": email })
-    .sort({ timestamp: -1 })
-    .toArray();
-  res.send(products);
-});
+    //    // ✅ Get all products by specific user (My Products)
+    app.get("/products/user", async (req, res) => {
+      const email = req.query.email;
+      const products = await productsCollection
+        .find({ "owner_email": email })
+        .sort({ timestamp: -1 })
+        .toArray();
+      res.send(products);
+    });
 
- 
+    // ✅ Delete a product (My Products page theke remove korar jonno)
+    app.delete("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await productsCollection.deleteOne({ _id: new ObjectId(id) });
+      res.send(result);
+    });
+
+    // ✅ Update a product (My Products → Update Button)
+    app.patch("/productUp/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedData = req.body;
+
+      const result = await productsCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updatedData }
+      );
+
+      res.send(result);
+    });
+    // =============================
+    // 🔹 Payment APIS
+    // =============================
 
 
-// ✅ Delete a product (My Products page theke remove korar jonno)
-app.delete("/products/:id", async (req, res) => {
-  const id = req.params.id;
-  const result = await productsCollection.deleteOne({ _id: new ObjectId(id) });
-  res.send(result);
-});
+    
 
-// ✅ Update a product (My Products → Update Button)
-app.patch("/productUp/:id", async (req, res) => {
-  const id = req.params.id;
-  const updatedData = req.body;
+    // ✅ create payment intent
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: price * 100, // convert to cents
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({ clientSecret: paymentIntent.client_secret });
 
-  const result = await productsCollection.updateOne(
-    { _id: new ObjectId(id) },
-    { $set: updatedData }
-  );
+    });
 
-  res.send(result);
-});
-
+    // ✅ update user subscription status
+    app.patch("/users/subscribe/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await usersCollection.updateOne(
+        { email },
+        { $set: { isSubscribed: true } }
+      );
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
