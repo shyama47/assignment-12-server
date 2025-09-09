@@ -103,14 +103,14 @@ app.get("/singleproduct/:id", async (req, res) => {
 
 
 //    // ✅ Get all products by specific user (My Products)
-// app.get("/products/user", async (req, res) => {
-//   const email = req.query.email;
-//   const products = await productsCollection
-//     .find({ "owner_email": email })
-//     .sort({ timestamp: -1 })
-//     .toArray();
-//   res.send(products);
-// });
+app.get("/products/user", async (req, res) => {
+  const email = req.query.email;
+  const products = await productsCollection
+    .find({ "owner_email": email })
+    .sort({ timestamp: -1 })
+    .toArray();
+  res.send(products);
+});
 
  
 
