@@ -79,6 +79,7 @@ async function run() {
 
       // ✅ add timestamp automatically
       product.timestamp = new Date();
+      product.status = 'pending';
 
       const result = await productsCollection.insertOne(product);
       res.send(result);
@@ -92,7 +93,47 @@ async function run() {
         .toArray();
       res.send(products);
     });
+   
+  // ✅ Get single product by id
+app.get("/singleproduct/:id", async (req, res) => {
+  const id = req.params.id;
+  const product = await productsCollection.findOne({ _id: new ObjectId(id) });
+  res.send(product);
+});
 
+
+//    // ✅ Get all products by specific user (My Products)
+// app.get("/products/user", async (req, res) => {
+//   const email = req.query.email;
+//   const products = await productsCollection
+//     .find({ "owner_email": email })
+//     .sort({ timestamp: -1 })
+//     .toArray();
+//   res.send(products);
+// });
+
+ 
+
+
+// ✅ Delete a product (My Products page theke remove korar jonno)
+app.delete("/products/:id", async (req, res) => {
+  const id = req.params.id;
+  const result = await productsCollection.deleteOne({ _id: new ObjectId(id) });
+  res.send(result);
+});
+
+// ✅ Update a product (My Products → Update Button)
+app.patch("/productUp/:id", async (req, res) => {
+  const id = req.params.id;
+  const updatedData = req.body;
+
+  const result = await productsCollection.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: updatedData }
+  );
+
+  res.send(result);
+});
 
 
     // Send a ping to confirm a successful connection
