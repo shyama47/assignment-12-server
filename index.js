@@ -144,7 +144,7 @@ async function run() {
     // =============================
 
 
-    
+
 
     // ✅ create payment intent
     app.post("/create-payment-intent", async (req, res) => {
@@ -164,6 +164,51 @@ async function run() {
       const result = await usersCollection.updateOne(
         { email },
         { $set: { isSubscribed: true } }
+      );
+      res.send(result);
+    });
+
+
+    // =============================
+    // 🔹 Moderator APIs
+    // =============================
+
+    // 1️⃣ Get all products by status (Pending, Accepted, Rejected)
+    app.get("/products/status/:status", async (req, res) => {
+      const status = req.params.status; // pending, accepted, rejected
+      const products = await productsCollection
+        .find({ status })
+        .sort({ timestamp: -1 }) // latest first
+        .toArray();
+      res.send(products);
+    });
+
+    // 2️⃣ Accept a product
+    app.patch("/products/accept/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await productsCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { status: "Accepted" } }
+      );
+      res.send(result);
+    });
+
+    // 3️⃣ Reject a product
+    app.patch("/products/reject/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await productsCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { status: "Rejected" } }
+      );
+      res.send(result);
+    });
+
+    // 4️⃣ Make a product featured
+    app.patch("/products/feature/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await productsCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { isFeatured: true } }
       );
       res.send(result);
     });
