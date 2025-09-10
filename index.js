@@ -174,14 +174,14 @@ async function run() {
     // =============================
 
     // 1️⃣ Get all products by status (Pending, Accepted, Rejected)
-    app.get("/products/status/:status", async (req, res) => {
-      const status = req.params.status; // pending, accepted, rejected
-      const products = await productsCollection
-        .find({ status })
-        .sort({ timestamp: -1 }) // latest first
-        .toArray();
-      res.send(products);
-    });
+    // app.get("/products/status/:status", async (req, res) => {
+    //   const status = req.params.status; // pending, accepted, rejected
+    //   const products = await productsCollection
+    //     .find({ status })
+    //     .sort({ timestamp: -1 }) // latest first
+    //     .toArray();
+    //   res.send(products);
+    // });
 
     // 2️⃣ Accept a product
     app.patch("/products/accept/:id", async (req, res) => {
