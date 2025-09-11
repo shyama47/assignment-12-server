@@ -292,11 +292,11 @@ async function run() {
 
     //  Get single product by id (already exists)
     // GET /products/:id
-    app.get("/singleproduct/:id", async (req, res) => {
-      const id = req.params.id;
-      const product = await productsCollection.findOne({ _id: new ObjectId(id) });
-      res.send(product);
-    });
+    // app.get("/singleproduct/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const product = await productsCollection.findOne({ _id: new ObjectId(id) });
+    //   res.send(product);
+    // });
 
 
     // Report a product
